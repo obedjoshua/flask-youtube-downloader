@@ -1,12 +1,12 @@
-from typing import Any, cast
 import os
 import shutil
+from typing import Any, cast
 
+import spotipy
+import yt_dlp
 from flask import Flask, jsonify, render_template, request, send_file
 from flask_cors import CORS
-import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-import yt_dlp
 from yt_dlp.utils import DownloadError, download_range_func
 
 app = Flask(__name__)
@@ -510,7 +510,7 @@ def download_music():
     })
   except Exception as e:
     app.logger.exception("Music download batch failed")
-    return jsonify({"error": f"Server Exception: {str(e)}"}), 500
+    return jsonify({"error": f"Server Exception: {e!s}"}), 500
 
 
 @app.route("/files/<path:filename>")
@@ -531,4 +531,5 @@ def serve_universal_file(filename):
 
 
 if __name__ == "__main__":
-  app.run(debug=True, port=5001)
+  port = int(os.environ.get("PORT", "5001"))
+  app.run(host="0.0.0.0", port=port)

@@ -5,102 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Universal Media Workspace</title>
     <style>
+        /* Theme Palettes: Bluish Dark Gray & Off-Cream (Inverted for Light Mode) */
         :root {
-            --bg-canvas: #12131c;
-            --bg-panel: #1e1e2f;
-            --bg-input: #161622;
-            --border-color: #2f314d;
+            --bg-canvas: #121420;
+            --bg-panel: #1a1d2e;
+            --bg-input: #161825;
+            --border-color: #2e334d;
             --accent-blue: #3b82f6;
             --accent-hover: #2563eb;
             --accent-success: #10b981;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --text-main: #f4f1ea;       /* Off-cream text for dark mode */
+            --text-muted: #9ba1b5;
+        }
+
+        [data-theme="light"] {
+            --bg-canvas: #f4f1ea;       /* Off-cream canvas for light mode */
+            --bg-panel: #e6e2d6;
+            --bg-input: #ffffff;
+            --border-color: #cbd1c5;
+            --accent-blue: #2563eb;
+            --accent-hover: #1d4ed8;
+            --accent-success: #059669;
+            --text-main: #161825;       /* Bluish dark gray text for light mode */
+            --text-muted: #5c637a;
+        }
+
+        * {
+            box-sizing: border-box;
+            border-radius: 0 !important; /* Enforces strict mitered sharp edges */
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
             background-color: var(--bg-canvas); color: var(--text-main); margin: 0; padding: 2rem;
             display: flex; flex-direction: column; align-items: center;
+            transition: background-color 0.2s, color 0.2s;
         }
 
         .container { width: 100%; max-width: 960px; }
 
-        /* Lucidchart-style Workspace Header */
+        /* Workspace Header */
         .workspace-header {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--bg-panel); border: 1px solid var(--border-color);
-            padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;
+            padding: 1rem 1.5rem; margin-bottom: 1.5rem;
         }
-        .workspace-header h1 { font-size: 1.2rem; margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+        .workspace-header h1 { font-size: 1.2rem; margin: 0; font-weight: 600; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
 
-        /* Toolbar Navigation Tabs */
+        /* Toolbar Navigation Tabs & Theme Toggle */
+        .header-actions { display: flex; align-items: center; gap: 12px; }
         .nav-tabs { display: flex; gap: 6px; }
-        .tab-btn { 
+        .tab-btn, .theme-toggle-btn { 
             padding: 8px 16px; font-weight: 500; font-size: 0.85rem;
             background: var(--bg-input); color: var(--text-muted); 
-            border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer;
-            transition: all 0.2s ease;
+            border: 1px solid var(--border-color); cursor: pointer;
+            transition: all 0.2s ease; display: flex; align-items: center; gap: 6px;
         }
         .tab-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+        .theme-toggle-btn:hover, .tab-btn:hover { border-color: var(--accent-blue); color: var(--text-main); }
 
         /* Cards / Panels */
         .card { 
             background: var(--bg-panel); border: 1px solid var(--border-color); 
-            padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            padding: 1.5rem; margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        .card h2 { font-size: 1rem; font-weight: 600; margin-top: 0; margin-bottom: 1rem; color: #e2e8f0; }
+        .card h2 { font-size: 1rem; font-weight: 600; margin-top: 0; margin-bottom: 1rem; color: var(--text-main); }
 
         .grid-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 1rem; }
         
         label { display: block; font-size: 0.75rem; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
         
         input, select, button {
-            padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-color);
+            padding: 10px 12px; border: 1px solid var(--border-color);
             background: var(--bg-input); color: var(--text-main); font-size: 0.9rem;
-            box-sizing: border-box; outline: none; transition: border-color 0.2s;
+            outline: none; transition: border-color 0.2s;
         }
         input:focus, select:focus { border-color: var(--accent-blue); }
 
-        button { background: var(--accent-blue); cursor: pointer; border: none; font-weight: 600; }
+        button { background: var(--accent-blue); color: #fff; cursor: pointer; border: none; font-weight: 600; }
         button:hover { background: var(--accent-hover); }
-        button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+        button:disabled { background: var(--border-color); color: var(--text-muted); cursor: not-allowed; }
 
         .hidden { display: none; }
-        .supported-badge { display: inline-block; background: var(--bg-input); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; color: var(--text-muted); margin-right: 4px; }
+        .supported-badge { display: inline-block; background: var(--bg-input); border: 1px solid var(--border-color); padding: 3px 8px; font-size: 0.75rem; color: var(--text-muted); margin-right: 4px; }
         #status { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; }
 
         /* Search Grid & Video Cards */
         .results-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
-        .video-card { background: var(--bg-input); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .video-card { background: var(--bg-input); overflow: hidden; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
         .video-card img { width: 100%; height: 140px; object-fit: cover; border-bottom: 1px solid var(--border-color); }
         .video-card-body { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .badge { background: #065f46; color: #6ee7b7; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+        .badge { background: var(--accent-success); color: #fff; padding: 2px 6px; font-size: 0.7rem; font-weight: 600; }
 
         /* Tracklist Checklist with Covers */
         .track-item {
             display: flex; align-items: center; justify-content: space-between;
             background: var(--bg-input); border: 1px solid var(--border-color);
-            padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; font-size: 0.85rem;
+            padding: 8px 12px; margin-bottom: 8px; font-size: 0.85rem;
         }
         .track-info { display: flex; align-items: center; gap: 12px; overflow: hidden; }
-        .track-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; background: #334155; flex-shrink: 0; }
+        .track-thumb { width: 40px; height: 40px; object-fit: cover; background: var(--border-color); flex-shrink: 0; border: 1px solid var(--border-color); }
         .track-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-main); font-weight: 500; }
 
         .cc-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-top: 5px; cursor: pointer; text-transform: none; color: var(--text-main); }
         .cc-checkbox input { width: auto; cursor: pointer; }
     </style>
 </head>
-<body>
+<body data-theme="dark">
 
 <div class="container">
-    <!-- Lucidchart Workspace Top Navigation Header -->
+    <!-- Workspace Top Navigation Header -->
     <div class="workspace-header">
-        <h1>Media Workspace</h1>
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="switchTab('universal-tab', this)">Universal</button>
-            <button class="tab-btn" onclick="switchTab('video-tab', this)">YouTube 8K</button>
-            <button class="tab-btn" onclick="switchTab('music-tab', this)">Music & Playlists</button>
+        <h1>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Media Workspace
+        </h1>
+        <div class="header-actions">
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchTab('universal-tab', this)">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    Universal
+                </button>
+                <button class="tab-btn" onclick="switchTab('video-tab', this)">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="0" ry="0"/></svg>
+                    YouTube 8K
+                </button>
+                <button class="tab-btn" onclick="switchTab('music-tab', this)">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    Music & Playlists
+                </button>
+            </div>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                <svg id="theme-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                Theme
+            </button>
         </div>
     </div>
 
@@ -274,6 +313,22 @@
         element.classList.add('active');
     }
 
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('theme-icon');
+        const currentTheme = body.getAttribute('data-theme');
+        
+        if (currentTheme === 'dark') {
+            body.setAttribute('data-theme', 'light');
+            // Sun icon for light mode indicator
+            icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+        } else {
+            body.setAttribute('data-theme', 'dark');
+            // Moon icon for dark mode indicator
+            icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+        }
+    }
+
     async function downloadUniversal() {
         const url = document.getElementById('uni-url').value;
         const media_type = document.getElementById('uni-mode').value;
@@ -345,7 +400,7 @@
                     <div class="video-card-body">
                         <div>
                             <span class="badge">${v.max_resolution}</span>
-                            <p style="font-weight:600; margin: 8px 0 4px 0; font-size: 0.85rem; color:#f8fafc;">${v.title}</p>
+                            <p style="font-weight:600; margin: 8px 0 4px 0; font-size: 0.85rem;">${v.title}</p>
                             <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">${v.uploader} • ${v.duration || 'N/A'}</p>
                         </div>
                         <button onclick="downloadDirect('${v.url}', '${v.max_height}')" style="margin-top: 10px; width: 100%; font-size:0.8rem;">
@@ -471,7 +526,7 @@
             
             data.files.forEach((filename, i) => {
                 const fileUrl = `/files/music/${encodeURIComponent(filename)}`;
-                fileList.innerHTML += `<p style="margin: 4px 0;"><a href="${fileUrl}" download style="color:#60a5fa; text-decoration: none; font-weight: 500;">${filename}</a></p>`;
+                fileList.innerHTML += `<p style="margin: 4px 0;"><a href="${fileUrl}" download style="color:var(--accent-blue); text-decoration: none; font-weight: 500;">${filename}</a></p>`;
                 
                 // Immediately trigger automated browser downloads with a staggered timeout
                 setTimeout(() => {
