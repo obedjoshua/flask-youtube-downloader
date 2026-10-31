@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Universal Media Workspace</title>
+    <!-- Tab Logo / Favicon (Inline SVG Data URI) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
     <style>
         /* Theme Palettes: Bluish Dark Gray & Off-Cream (Inverted for Light Mode) */
         :root {
@@ -14,19 +16,19 @@
             --accent-blue: #3b82f6;
             --accent-hover: #2563eb;
             --accent-success: #10b981;
-            --text-main: #f4f1ea;       /* Off-cream text for dark mode */
+            --text-main: #f4f1ea;
             --text-muted: #9ba1b5;
         }
 
         [data-theme="light"] {
-            --bg-canvas: #f4f1ea;       /* Off-cream canvas for light mode */
+            --bg-canvas: #f4f1ea;
             --bg-panel: #e6e2d6;
             --bg-input: #ffffff;
             --border-color: #cbd1c5;
             --accent-blue: #2563eb;
             --accent-hover: #1d4ed8;
             --accent-success: #059669;
-            --text-main: #161825;       /* Bluish dark gray text for light mode */
+            --text-main: #161825;
             --text-muted: #5c637a;
         }
 
@@ -37,29 +39,36 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-            background-color: var(--bg-canvas); color: var(--text-main); margin: 0; padding: 2rem;
+            background-color: var(--bg-canvas); color: var(--text-main); margin: 0; padding: 1rem;
             display: flex; flex-direction: column; align-items: center;
             transition: background-color 0.2s, color 0.2s;
+        }
+
+        @media (min-width: 768px) {
+            body { padding: 2rem; }
         }
 
         .container { width: 100%; max-width: 960px; }
 
         /* Workspace Header */
         .workspace-header {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; flex-direction: column; gap: 12px;
             background: var(--bg-panel); border: 1px solid var(--border-color);
-            padding: 1rem 1.5rem; margin-bottom: 1.5rem;
+            padding: 1rem; margin-bottom: 1.5rem;
         }
-        .workspace-header h1 { font-size: 1.2rem; margin: 0; font-weight: 600; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+        @media (min-width: 640px) {
+            .workspace-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; }
+        }
+        .workspace-header h1 { font-size: 1.1rem; margin: 0; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 
         /* Toolbar Navigation Tabs & Theme Toggle */
-        .header-actions { display: flex; align-items: center; gap: 12px; }
-        .nav-tabs { display: flex; gap: 6px; }
+        .header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+        .nav-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
         .tab-btn, .theme-toggle-btn { 
-            padding: 8px 16px; font-weight: 500; font-size: 0.85rem;
+            padding: 6px 12px; font-weight: 500; font-size: 0.8rem;
             background: var(--bg-input); color: var(--text-muted); 
             border: 1px solid var(--border-color); cursor: pointer;
-            transition: all 0.2s ease; display: flex; align-items: center; gap: 6px;
+            transition: all 0.2s ease; display: flex; align-items: center; gap: 5px;
         }
         .tab-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
         .theme-toggle-btn:hover, .tab-btn:hover { border-color: var(--accent-blue); color: var(--text-main); }
@@ -67,20 +76,25 @@
         /* Cards / Panels */
         .card { 
             background: var(--bg-panel); border: 1px solid var(--border-color); 
-            padding: 1.5rem; margin-bottom: 1.5rem;
+            padding: 1rem; margin-bottom: 1.5rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
+        @media (min-width: 640px) { .card { padding: 1.5rem; } }
         .card h2 { font-size: 1rem; font-weight: 600; margin-top: 0; margin-bottom: 1rem; color: var(--text-main); }
 
-        .grid-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 1rem; }
+        .grid-filters { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 1rem; }
+        @media (min-width: 640px) { .grid-filters { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); } }
         
         label { display: block; font-size: 0.75rem; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
         
         input, select, button {
+            width: 100%;
             padding: 10px 12px; border: 1px solid var(--border-color);
             background: var(--bg-input); color: var(--text-main); font-size: 0.9rem;
             outline: none; transition: border-color 0.2s;
         }
+        @media (min-width: 640px) { input, select { width: auto; } }
+        
         input:focus, select:focus { border-color: var(--accent-blue); }
 
         button { background: var(--accent-blue); color: #fff; cursor: pointer; border: none; font-weight: 600; }
@@ -88,40 +102,51 @@
         button:disabled { background: var(--border-color); color: var(--text-muted); cursor: not-allowed; }
 
         .hidden { display: none; }
-        .supported-badge { display: inline-block; background: var(--bg-input); border: 1px solid var(--border-color); padding: 3px 8px; font-size: 0.75rem; color: var(--text-muted); margin-right: 4px; }
-        #status { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; }
+        .supported-badge { display: inline-block; background: var(--bg-input); border: 1px solid var(--border-color); padding: 3px 8px; font-size: 0.75rem; color: var(--text-muted); margin-right: 4px; margin-bottom: 4px; }
+        #status { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; word-break: break-word; }
 
         /* Search Grid & Video Cards */
         .results-list { display: flex; flex-direction: column; gap: 1rem; }
-        .grid-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .grid-results { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        @media (min-width: 640px) { .grid-results { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); } }
         
         .video-card { background: var(--bg-input); overflow: hidden; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
         .video-card img { width: 100%; height: 140px; object-fit: cover; border-bottom: 1px solid var(--border-color); }
         .video-card-body { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .badge { background: var(--accent-success); color: #fff; padding: 2px 6px; font-size: 0.7rem; font-weight: 600; }
+        .badge { background: var(--accent-success); color: #fff; padding: 2px 6px; font-size: 0.7rem; font-weight: 600; display: inline-block; }
 
-        /* Interactive Video Preview Card (Matches reference design) */
+        /* Interactive Video Preview Card */
         .video-preview-card {
             background: var(--bg-panel);
             border: 2px solid var(--accent-success);
             display: flex;
-            gap: 16px;
-            padding: 16px;
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px;
             margin-bottom: 1rem;
-            align-items: center;
+            align-items: stretch;
+        }
+        @media (min-width: 640px) {
+            .video-preview-card { flex-direction: row; align-items: center; padding: 16px; gap: 16px; }
         }
         .video-preview-thumb {
-            width: 200px;
-            height: 115px;
+            width: 100%;
+            height: 160px;
             object-fit: cover;
             border: 1px solid var(--border-color);
             flex-shrink: 0;
         }
+        @media (min-width: 640px) {
+            .video-preview-thumb { width: 200px; height: 115px; }
+        }
         .download-action-group {
             display: flex;
-            align-items: center;
-            gap: 0;
+            flex-direction: column;
+            gap: 8px;
             margin-top: 12px;
+        }
+        @media (min-width: 480px) {
+            .download-action-group { flex-direction: row; gap: 0; }
         }
         .btn-download-main {
             background: var(--accent-success);
@@ -130,27 +155,32 @@
             font-weight: 600;
             border: none;
             cursor: pointer;
+            width: 100%;
         }
+        @media (min-width: 480px) { .btn-download-main { width: auto; } }
         .btn-download-main:hover { opacity: 0.9; }
         .select-res-dropdown {
             background: var(--bg-input);
             color: var(--text-main);
             border: 1px solid var(--border-color);
-            border-left: none;
             padding: 10px 14px;
             font-weight: 600;
             cursor: pointer;
             outline: none;
+            width: 100%;
+        }
+        @media (min-width: 480px) {
+            .select-res-dropdown { border-left: none; width: auto; }
         }
 
         /* Tracklist Checklist with Covers */
         .track-item {
             display: flex; align-items: center; justify-content: space-between;
             background: var(--bg-input); border: 1px solid var(--border-color);
-            padding: 8px 12px; margin-bottom: 8px; font-size: 0.85rem;
+            padding: 8px 12px; margin-bottom: 8px; font-size: 0.85rem; gap: 8px;
         }
-        .track-info { display: flex; align-items: center; gap: 12px; overflow: hidden; }
-        .track-thumb { width: 40px; height: 40px; object-fit: cover; background: var(--border-color); flex-shrink: 0; border: 1px solid var(--border-color); }
+        .track-info { display: flex; align-items: center; gap: 10px; overflow: hidden; flex: 1; }
+        .track-thumb { width: 36px; height: 36px; object-fit: cover; background: var(--border-color); flex-shrink: 0; border: 1px solid var(--border-color); }
         .track-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-main); font-weight: 500; }
 
         .cc-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-top: 5px; cursor: pointer; text-transform: none; color: var(--text-main); }
@@ -178,7 +208,7 @@
                 </button>
                 <button class="tab-btn" onclick="switchTab('music-tab', this)">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                    Music & Playlists
+                    Music
                 </button>
             </div>
             <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
@@ -208,18 +238,18 @@
             <div class="grid-filters">
                 <div>
                     <label>Mode</label>
-                    <select id="uni-mode">
+                    <select id="uni-mode" style="width: 100%;">
                         <option value="video" selected>Video + Audio (MP4)</option>
                         <option value="audio_only">Audio Only (MP3)</option>
                     </select>
                 </div>
                 <div>
                     <label>Start Clip (Optional)</label>
-                    <input type="text" id="uni-start" placeholder="e.g. 00:10">
+                    <input type="text" id="uni-start" placeholder="e.g. 00:10" style="width: 100%;">
                 </div>
                 <div>
                     <label>End Clip (Optional)</label>
-                    <input type="text" id="uni-end" placeholder="e.g. 01:30">
+                    <input type="text" id="uni-end" placeholder="e.g. 01:30" style="width: 100%;">
                 </div>
             </div>
 
@@ -231,7 +261,7 @@
                 </div>
                 <div>
                     <label>Language</label>
-                    <select id="uni-cc-lang">
+                    <select id="uni-cc-lang" style="width: 100%;">
                         <option value="en" selected>English</option>
                         <option value="es">Spanish</option>
                         <option value="fr">French</option>
@@ -244,7 +274,7 @@
         </div>
 
         <div id="uni-result" class="card hidden" style="text-align: center;">
-            <h3 id="uni-title" style="margin-top:0; font-size: 1rem;"></h3>
+            <h3 id="uni-title" style="margin-top:0; font-size: 1rem; word-break: break-word;"></h3>
             <p id="uni-site" style="color: var(--accent-success); font-weight: 600; font-size: 0.85rem;"></p>
             <a id="uni-link" href="" download><button style="width:100%;">Save to Device</button></a>
         </div>
@@ -254,14 +284,14 @@
     <div id="video-tab" class="tab-content hidden">
         <div class="card">
             <h2>YouTube Video Explorer</h2>
-            <div style="display: flex; gap: 8px; margin-bottom: 1rem;">
-                <input type="text" id="search-query" placeholder="Search query or YouTube URL..." style="flex: 1;">
-                <button onclick="executeSearch()">Search</button>
+            <div style="display: flex; flex-direction: column; sm:flex-row; gap: 8px; margin-bottom: 1rem;">
+                <input type="text" id="search-query" placeholder="Search query or YouTube URL..." style="width: 100%;">
+                <button onclick="executeSearch()" style="width: 100%;">Search</button>
             </div>
             <div class="grid-filters">
                 <div>
                     <label>Sort By</label>
-                    <select id="filter-sort">
+                    <select id="filter-sort" style="width: 100%;">
                         <option value="relevance">Relevance</option>
                         <option value="date">Upload Date</option>
                         <option value="views">View Count</option>
@@ -269,7 +299,7 @@
                 </div>
                 <div>
                     <label>Min. Quality</label>
-                    <select id="filter-res">
+                    <select id="filter-res" style="width: 100%;">
                         <option value="0">Any Quality</option>
                         <option value="1080">1080p FHD</option>
                         <option value="2160">4K Ultra HD</option>
@@ -286,7 +316,7 @@
                 </div>
                 <div>
                     <label>CC Language</label>
-                    <select id="yt-cc-lang">
+                    <select id="yt-cc-lang" style="width: 100%;">
                         <option value="en" selected>English</option>
                         <option value="es">Spanish</option>
                         <option value="fr">French</option>
@@ -309,7 +339,7 @@
             <div class="grid-filters">
                 <div>
                     <label>Audio Format</label>
-                    <select id="music-format">
+                    <select id="music-format" style="width: 100%;">
                         <option value="mp3" selected>MP3</option>
                         <option value="flac">FLAC (Lossless)</option>
                         <option value="m4a">M4A (AAC)</option>
@@ -317,7 +347,7 @@
                 </div>
                 <div>
                     <label>Bitrate Quality</label>
-                    <select id="music-quality">
+                    <select id="music-quality" style="width: 100%;">
                         <option value="320" selected>320 kbps</option>
                         <option value="256">256 kbps</option>
                     </select>
@@ -328,11 +358,11 @@
 
         <!-- Tracklist Selection Container -->
         <div id="tracklist-container" class="hidden card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="display: flex; flex-direction: column; sm:flex-row; justify-content: space-between; align-items: flex-start; sm:align-items: center; gap: 8px; margin-bottom: 12px;">
                 <h3 style="margin: 0; font-size: 0.95rem;">Select Tracks:</h3>
-                <div>
-                    <button onclick="toggleSelectAll(true)" style="padding: 4px 10px; font-size: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color);">Select All</button>
-                    <button onclick="toggleSelectAll(false)" style="padding: 4px 10px; font-size: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color);">Deselect All</button>
+                <div style="display: flex; gap: 6px; width: 100%; sm:width: auto;">
+                    <button onclick="toggleSelectAll(true)" style="flex: 1; padding: 6px 10px; font-size: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color);">Select All</button>
+                    <button onclick="toggleSelectAll(false)" style="flex: 1; padding: 6px 10px; font-size: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color);">Deselect All</button>
                 </div>
             </div>
             <div id="tracks-checklist" style="max-height: 280px; overflow-y: auto; padding-right: 4px; margin-bottom: 1rem;"></div>
@@ -341,7 +371,7 @@
 
         <div id="downloaded-music-container" class="hidden card">
             <h3 style="margin-top:0; font-size: 0.95rem;">Downloaded Output Files:</h3>
-            <div id="music-file-list"></div>
+            <div id="music-file-list" style="word-break: break-word;"></div>
         </div>
     </div>
 
@@ -435,7 +465,6 @@
 
             status.innerText = `Found ${data.results.length} result(s):`;
 
-            // Create container grid for video cards
             const gridDiv = document.createElement('div');
             gridDiv.className = 'grid-results';
 
@@ -463,17 +492,14 @@
         }
     }
 
-    // Displays the preview box matching your reference image above the results
     function showVideoPreview(v) {
         const resultsContainer = document.getElementById('results');
         
-        // Remove existing preview if present
         const existingPreview = document.getElementById('active-video-preview');
         if (existingPreview) existingPreview.remove();
 
         const maxHeight = v.max_height || 1080;
         
-        // Build dynamic resolution options based on actual detected max height
         let optionsHTML = '';
         const standardRes = [4320, 2160, 1080, 720, 480, 360];
         standardRes.forEach(res => {
@@ -489,7 +515,7 @@
         previewDiv.className = 'video-preview-card';
         previewDiv.innerHTML = `
             <img src="${v.thumbnail}" class="video-preview-thumb" alt="thumb">
-            <div style="flex: 1; overflow: hidden;">
+            <div style="flex: 1; overflow: hidden; width: 100%;">
                 <h3 style="margin: 0 0 6px 0; font-size: 0.95rem; color: var(--text-main); text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">${v.title}</h3>
                 <p style="margin: 0 0 12px 0; font-size: 0.8rem; color: var(--text-muted);">${v.duration} • Highest Detected: ${v.max_resolution}</p>
                 <div class="download-action-group">
@@ -561,7 +587,7 @@
                 const thumbUrl = track.thumbnail || 'https://via.placeholder.com/40?text=♪';
                 row.innerHTML = `
                     <div class="track-info">
-                        <input type="checkbox" id="track-${index}" checked style="cursor: pointer;">
+                        <input type="checkbox" id="track-${index}" checked style="cursor: pointer; width: auto;">
                         <img src="${thumbUrl}" class="track-thumb" alt="cover">
                         <span class="track-title" title="${track.title}">${track.title}</span>
                     </div>
