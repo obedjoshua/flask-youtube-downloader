@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Universal Media Workspace</title>
-    <!-- Tab Logo / Favicon (Inline SVG Data URI) -->
+    <!-- Tab Logo / Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
     <style>
-        /* Theme Palettes: Bluish Dark Gray & Off-Cream (Inverted for Light Mode) */
         :root {
             --bg-canvas: #121420;
             --bg-panel: #1a1d2e;
@@ -34,49 +33,64 @@
 
         * {
             box-sizing: border-box;
-            border-radius: 0 !important; /* Enforces strict mitered sharp edges */
+            border-radius: 0 !important;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-            background-color: var(--bg-canvas); color: var(--text-main); margin: 0; padding: 1rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-canvas); color: var(--text-main); 
+            margin: 0; padding: 0.75rem;
             display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden;
             transition: background-color 0.2s, color 0.2s;
         }
 
-        @media (min-width: 768px) {
-            body { padding: 2rem; }
+        @media (min-width: 640px) {
+            body { padding: 1.5rem; }
         }
 
         .container { width: 100%; max-width: 960px; }
 
-        /* Workspace Header */
+        /* Fully Responsive Workspace Header */
         .workspace-header {
             display: flex; flex-direction: column; gap: 12px;
             background: var(--bg-panel); border: 1px solid var(--border-color);
             padding: 1rem; margin-bottom: 1.5rem;
+            width: 100%;
         }
-        @media (min-width: 640px) {
+        @media (min-width: 768px) {
             .workspace-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; }
         }
         .workspace-header h1 { font-size: 1.1rem; margin: 0; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 
-        /* Toolbar Navigation Tabs & Theme Toggle */
-        .header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-        .nav-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+        .header-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+        @media (min-width: 768px) {
+            .header-actions { flex-direction: row; align-items: center; width: auto; gap: 12px; }
+        }
+
+        .nav-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 100%; }
+        @media (min-width: 768px) {
+            .nav-tabs { display: flex; width: auto; gap: 6px; }
+        }
+
         .tab-btn, .theme-toggle-btn { 
-            padding: 6px 12px; font-weight: 500; font-size: 0.8rem;
+            padding: 8px 10px; font-weight: 500; font-size: 0.75rem; text-align: center;
             background: var(--bg-input); color: var(--text-muted); 
             border: 1px solid var(--border-color); cursor: pointer;
-            transition: all 0.2s ease; display: flex; align-items: center; gap: 5px;
+            display: flex; align-items: center; justify-content: center; gap: 4px;
+            white-space: nowrap;
         }
+        @media (min-width: 768px) {
+            .tab-btn, .theme-toggle-btn { padding: 8px 14px; font-size: 0.85rem; }
+        }
+
         .tab-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
         .theme-toggle-btn:hover, .tab-btn:hover { border-color: var(--accent-blue); color: var(--text-main); }
 
         /* Cards / Panels */
         .card { 
             background: var(--bg-panel); border: 1px solid var(--border-color); 
-            padding: 1rem; margin-bottom: 1.5rem;
+            padding: 1rem; margin-bottom: 1.5rem; width: 100%;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         @media (min-width: 640px) { .card { padding: 1.5rem; } }
@@ -91,10 +105,8 @@
             width: 100%;
             padding: 10px 12px; border: 1px solid var(--border-color);
             background: var(--bg-input); color: var(--text-main); font-size: 0.9rem;
-            outline: none; transition: border-color 0.2s;
+            outline: none;
         }
-        @media (min-width: 640px) { input, select { width: auto; } }
-        
         input:focus, select:focus { border-color: var(--accent-blue); }
 
         button { background: var(--accent-blue); color: #fff; cursor: pointer; border: none; font-weight: 600; }
@@ -105,8 +117,8 @@
         .supported-badge { display: inline-block; background: var(--bg-input); border: 1px solid var(--border-color); padding: 3px 8px; font-size: 0.75rem; color: var(--text-muted); margin-right: 4px; margin-bottom: 4px; }
         #status { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; word-break: break-word; }
 
-        /* Search Grid & Video Cards */
-        .results-list { display: flex; flex-direction: column; gap: 1rem; }
+        /* Search Results Grid */
+        .results-list { display: flex; flex-direction: column; gap: 1rem; width: 100%; }
         .grid-results { display: grid; grid-template-columns: 1fr; gap: 1rem; }
         @media (min-width: 640px) { .grid-results { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); } }
         
@@ -119,61 +131,38 @@
         .video-preview-card {
             background: var(--bg-panel);
             border: 2px solid var(--accent-success);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding: 12px;
-            margin-bottom: 1rem;
-            align-items: stretch;
+            display: flex; flex-direction: column; gap: 12px;
+            padding: 12px; margin-bottom: 1rem; width: 100%;
         }
         @media (min-width: 640px) {
             .video-preview-card { flex-direction: row; align-items: center; padding: 16px; gap: 16px; }
         }
         .video-preview-thumb {
-            width: 100%;
-            height: 160px;
-            object-fit: cover;
-            border: 1px solid var(--border-color);
-            flex-shrink: 0;
+            width: 100%; height: 160px; object-fit: cover; border: 1px solid var(--border-color); flex-shrink: 0;
         }
         @media (min-width: 640px) {
             .video-preview-thumb { width: 200px; height: 115px; }
         }
         .download-action-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 12px;
+            display: flex; flex-direction: column; gap: 8px; margin-top: 12px; width: 100%;
         }
         @media (min-width: 480px) {
             .download-action-group { flex-direction: row; gap: 0; }
         }
         .btn-download-main {
-            background: var(--accent-success);
-            color: #fff;
-            padding: 10px 20px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            width: 100%;
+            background: var(--accent-success); color: #fff; padding: 10px 20px;
+            font-weight: 600; border: none; cursor: pointer; width: 100%;
         }
         @media (min-width: 480px) { .btn-download-main { width: auto; } }
-        .btn-download-main:hover { opacity: 0.9; }
         .select-res-dropdown {
-            background: var(--bg-input);
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 10px 14px;
-            font-weight: 600;
-            cursor: pointer;
-            outline: none;
-            width: 100%;
+            background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color);
+            padding: 10px 14px; font-weight: 600; cursor: pointer; outline: none; width: 100%;
         }
         @media (min-width: 480px) {
             .select-res-dropdown { border-left: none; width: auto; }
         }
 
-        /* Tracklist Checklist with Covers */
+        /* Tracklist Item */
         .track-item {
             display: flex; align-items: center; justify-content: space-between;
             background: var(--bg-input); border: 1px solid var(--border-color);
@@ -182,8 +171,7 @@
         .track-info { display: flex; align-items: center; gap: 10px; overflow: hidden; flex: 1; }
         .track-thumb { width: 36px; height: 36px; object-fit: cover; background: var(--border-color); flex-shrink: 0; border: 1px solid var(--border-color); }
         .track-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-main); font-weight: 500; }
-
-        .cc-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-top: 5px; cursor: pointer; text-transform: none; color: var(--text-main); }
+        .cc-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-top: 5px; cursor: pointer; color: var(--text-main); }
         .cc-checkbox input { width: auto; cursor: pointer; }
     </style>
 </head>
@@ -198,18 +186,9 @@
         </h1>
         <div class="header-actions">
             <div class="nav-tabs">
-                <button class="tab-btn active" onclick="switchTab('universal-tab', this)">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    Universal
-                </button>
-                <button class="tab-btn" onclick="switchTab('video-tab', this)">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="0" ry="0"/></svg>
-                    YouTube 8K
-                </button>
-                <button class="tab-btn" onclick="switchTab('music-tab', this)">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                    Music
-                </button>
+                <button class="tab-btn active" onclick="switchTab('universal-tab', this)">Universal</button>
+                <button class="tab-btn" onclick="switchTab('video-tab', this)">YouTube 8K</button>
+                <button class="tab-btn" onclick="switchTab('music-tab', this)">Music</button>
             </div>
             <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
                 <svg id="theme-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -232,24 +211,24 @@
 
             <div style="margin-bottom: 1rem;">
                 <label>Media Link</label>
-                <input type="text" id="uni-url" placeholder="Paste media URL here..." style="width: 100%;">
+                <input type="text" id="uni-url" placeholder="Paste media URL here...">
             </div>
 
             <div class="grid-filters">
                 <div>
                     <label>Mode</label>
-                    <select id="uni-mode" style="width: 100%;">
+                    <select id="uni-mode">
                         <option value="video" selected>Video + Audio (MP4)</option>
                         <option value="audio_only">Audio Only (MP3)</option>
                     </select>
                 </div>
                 <div>
                     <label>Start Clip (Optional)</label>
-                    <input type="text" id="uni-start" placeholder="e.g. 00:10" style="width: 100%;">
+                    <input type="text" id="uni-start" placeholder="e.g. 00:10">
                 </div>
                 <div>
                     <label>End Clip (Optional)</label>
-                    <input type="text" id="uni-end" placeholder="e.g. 01:30" style="width: 100%;">
+                    <input type="text" id="uni-end" placeholder="e.g. 01:30">
                 </div>
             </div>
 
@@ -261,7 +240,7 @@
                 </div>
                 <div>
                     <label>Language</label>
-                    <select id="uni-cc-lang" style="width: 100%;">
+                    <select id="uni-cc-lang">
                         <option value="en" selected>English</option>
                         <option value="es">Spanish</option>
                         <option value="fr">French</option>
@@ -270,13 +249,13 @@
                 </div>
             </div>
 
-            <button id="uni-btn" onclick="downloadUniversal()" style="width: 100%; margin-top: 8px;">Process Download</button>
+            <button id="uni-btn" onclick="downloadUniversal()" style="margin-top: 8px;">Process Download</button>
         </div>
 
         <div id="uni-result" class="card hidden" style="text-align: center;">
             <h3 id="uni-title" style="margin-top:0; font-size: 1rem; word-break: break-word;"></h3>
             <p id="uni-site" style="color: var(--accent-success); font-weight: 600; font-size: 0.85rem;"></p>
-            <a id="uni-link" href="" download><button style="width:100%;">Save to Device</button></a>
+            <a id="uni-link" href="" download><button>Save to Device</button></a>
         </div>
     </div>
 
@@ -284,14 +263,14 @@
     <div id="video-tab" class="tab-content hidden">
         <div class="card">
             <h2>YouTube Video Explorer</h2>
-            <div style="display: flex; flex-direction: column; sm:flex-row; gap: 8px; margin-bottom: 1rem;">
-                <input type="text" id="search-query" placeholder="Search query or YouTube URL..." style="width: 100%;">
-                <button onclick="executeSearch()" style="width: 100%;">Search</button>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem;">
+                <input type="text" id="search-query" placeholder="Search query or YouTube URL...">
+                <button onclick="executeSearch()">Search</button>
             </div>
             <div class="grid-filters">
                 <div>
                     <label>Sort By</label>
-                    <select id="filter-sort" style="width: 100%;">
+                    <select id="filter-sort">
                         <option value="relevance">Relevance</option>
                         <option value="date">Upload Date</option>
                         <option value="views">View Count</option>
@@ -299,7 +278,7 @@
                 </div>
                 <div>
                     <label>Min. Quality</label>
-                    <select id="filter-res" style="width: 100%;">
+                    <select id="filter-res">
                         <option value="0">Any Quality</option>
                         <option value="1080">1080p FHD</option>
                         <option value="2160">4K Ultra HD</option>
@@ -316,7 +295,7 @@
                 </div>
                 <div>
                     <label>CC Language</label>
-                    <select id="yt-cc-lang" style="width: 100%;">
+                    <select id="yt-cc-lang">
                         <option value="en" selected>English</option>
                         <option value="es">Spanish</option>
                         <option value="fr">French</option>
@@ -334,12 +313,12 @@
             <h2>Music & Playlist Workspace</h2>
             <div style="margin-bottom: 1rem;">
                 <label>Spotify or YouTube Playlist URL</label>
-                <input type="text" id="music-url" placeholder="Paste Spotify or YouTube playlist/track link..." style="width: 100%;">
+                <input type="text" id="music-url" placeholder="Paste Spotify or YouTube playlist/track link...">
             </div>
             <div class="grid-filters">
                 <div>
                     <label>Audio Format</label>
-                    <select id="music-format" style="width: 100%;">
+                    <select id="music-format">
                         <option value="mp3" selected>MP3</option>
                         <option value="flac">FLAC (Lossless)</option>
                         <option value="m4a">M4A (AAC)</option>
@@ -347,26 +326,25 @@
                 </div>
                 <div>
                     <label>Bitrate Quality</label>
-                    <select id="music-quality" style="width: 100%;">
+                    <select id="music-quality">
                         <option value="320" selected>320 kbps</option>
                         <option value="256">256 kbps</option>
                     </select>
                 </div>
             </div>
-            <button id="fetch-playlist-btn" onclick="fetchPlaylist()" style="width: 100%;">Extract Tracklist</button>
+            <button id="fetch-playlist-btn" onclick="fetchPlaylist()">Extract Tracklist</button>
         </div>
 
-        <!-- Tracklist Selection Container -->
         <div id="tracklist-container" class="hidden card">
-            <div style="display: flex; flex-direction: column; sm:flex-row; justify-content: space-between; align-items: flex-start; sm:align-items: center; gap: 8px; margin-bottom: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
                 <h3 style="margin: 0; font-size: 0.95rem;">Select Tracks:</h3>
-                <div style="display: flex; gap: 6px; width: 100%; sm:width: auto;">
+                <div style="display: flex; gap: 6px; width: 100%;">
                     <button onclick="toggleSelectAll(true)" style="flex: 1; padding: 6px 10px; font-size: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color);">Select All</button>
                     <button onclick="toggleSelectAll(false)" style="flex: 1; padding: 6px 10px; font-size: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color);">Deselect All</button>
                 </div>
             </div>
             <div id="tracks-checklist" style="max-height: 280px; overflow-y: auto; padding-right: 4px; margin-bottom: 1rem;"></div>
-            <button id="download-selected-btn" onclick="downloadSelectedMusic()" style="width: 100%; background: var(--accent-success);">Download Selected Tracks</button>
+            <button id="download-selected-btn" onclick="downloadSelectedMusic()" style="background: var(--accent-success);">Download Selected Tracks</button>
         </div>
 
         <div id="downloaded-music-container" class="hidden card">
