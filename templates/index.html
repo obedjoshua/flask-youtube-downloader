@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Media Workspace</title>
+    <style>
+        :root {
+            --bg-canvas: #12131c;
+            --bg-panel: #1e1e2f;
+            --bg-input: #161622;
+            --border-color: #2f314d;
+            --accent-blue: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-success: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            background-color: var(--bg-canvas); color: var(--text-main); margin: 0; padding: 2rem;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .container { width: 100%; max-width: 960px; }
+
+        /* Lucidchart-style Workspace Header */
+        .workspace-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--bg-panel); border: 1px solid var(--border-color);
+            padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;
+        }
+        .workspace-header h1 { font-size: 1.2rem; margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+
+        /* Toolbar Navigation Tabs */
+        .nav-tabs { display: flex; gap: 6px; }
+        .tab-btn { 
+            padding: 8px 16px; font-weight: 500; font-size: 0.85rem;
+            background: var(--bg-input); color: var(--text-muted); 
+            border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tab-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+
+        /* Cards / Panels */
+        .card { 
+            background: var(--bg-panel); border: 1px solid var(--border-color); 
+            padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+        .card h2 { font-size: 1rem; font-weight: 600; margin-top: 0; margin-bottom: 1rem; color: #e2e8f0; }
+
+        .grid-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 1rem; }
+        
+        label { display: block; font-size: 0.75rem; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        input, select, button {
+            padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-color);
+            background: var(--bg-input); color: var(--text-main); font-size: 0.9rem;
+            box-sizing: border-box; outline: none; transition: border-color 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--accent-blue); }
+
+        button { background: var(--accent-blue); cursor: pointer; border: none; font-weight: 600; }
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+        .hidden { display: none; }
+        .supported-badge { display: inline-block; background: var(--bg-input); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; color: var(--text-muted); margin-right: 4px; }
+        #status { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; }
+
+        /* Search Grid & Video Cards */
+        .results-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .video-card { background: var(--bg-input); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .video-card img { width: 100%; height: 140px; object-fit: cover; border-bottom: 1px solid var(--border-color); }
+        .video-card-body { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .badge { background: #065f46; color: #6ee7b7; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+
+        /* Tracklist Checklist with Covers */
+        .track-item {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--bg-input); border: 1px solid var(--border-color);
+            padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; font-size: 0.85rem;
+        }
+        .track-info { display: flex; align-items: center; gap: 12px; overflow: hidden; }
+        .track-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; background: #334155; flex-shrink: 0; }
+        .track-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-main); font-weight: 500; }
+
+        .cc-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-top: 5px; cursor: pointer; text-transform: none; color: var(--text-main); }
+        .cc-checkbox input { width: auto; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Lucidchart Workspace Top Navigation Header -->
+    <div class="workspace-header">
+        <h1>Media Workspace</h1>
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('universal-tab', this)">Universal</button>
+            <button class="tab-btn" onclick="switchTab('video-tab', this)">YouTube 8K</button>
+            <button class="tab-btn" onclick="switchTab('music-tab', this)">Music & Playlists</button>
+        </div>
+    </div>
+
+    <!-- TAB 1: Universal Downloader -->
+    <div id="universal-tab" class="tab-content">
+        <div class="card">
+            <h2>Multi-Platform Downloader</h2>
+            <div style="margin-bottom: 12px;">
+                <span class="supported-badge">TikTok</span>
+                <span class="supported-badge">Instagram</span>
+                <span class="supported-badge">X / Twitter</span>
+                <span class="supported-badge">YouTube</span>
+                <span class="supported-badge">+1000 Sites</span>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label>Media Link</label>
+                <input type="text" id="uni-url" placeholder="Paste media URL here..." style="width: 100%;">
+            </div>
+
+            <div class="grid-filters">
+                <div>
+                    <label>Mode</label>
+                    <select id="uni-mode">
+                        <option value="video" selected>Video + Audio (MP4)</option>
+                        <option value="audio_only">Audio Only (MP3)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Start Clip (Optional)</label>
+                    <input type="text" id="uni-start" placeholder="e.g. 00:10">
+                </div>
+                <div>
+                    <label>End Clip (Optional)</label>
+                    <input type="text" id="uni-end" placeholder="e.g. 01:30">
+                </div>
+            </div>
+
+            <div class="grid-filters" style="align-items: center;">
+                <div>
+                    <label class="cc-checkbox">
+                        <input type="checkbox" id="uni-embed-cc"> Embed Subtitles / CC
+                    </label>
+                </div>
+                <div>
+                    <label>Language</label>
+                    <select id="uni-cc-lang">
+                        <option value="en" selected>English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="all">All Available</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="uni-btn" onclick="downloadUniversal()" style="width: 100%; margin-top: 8px;">Process Download</button>
+        </div>
+
+        <div id="uni-result" class="card hidden" style="text-align: center;">
+            <h3 id="uni-title" style="margin-top:0; font-size: 1rem;"></h3>
+            <p id="uni-site" style="color: var(--accent-success); font-weight: 600; font-size: 0.85rem;"></p>
+            <a id="uni-link" href="" download><button style="width:100%;">Save to Device</button></a>
+        </div>
+    </div>
+
+    <!-- TAB 2: YouTube Search & 8K Video -->
+    <div id="video-tab" class="tab-content hidden">
+        <div class="card">
+            <h2>YouTube Video Explorer</h2>
+            <div style="display: flex; gap: 8px; margin-bottom: 1rem;">
+                <input type="text" id="search-query" placeholder="Search query or YouTube URL..." style="flex: 1;">
+                <button onclick="executeSearch()">Search</button>
+            </div>
+            <div class="grid-filters">
+                <div>
+                    <label>Sort By</label>
+                    <select id="filter-sort">
+                        <option value="relevance">Relevance</option>
+                        <option value="date">Upload Date</option>
+                        <option value="views">View Count</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Min. Quality</label>
+                    <select id="filter-res">
+                        <option value="0">Any Quality</option>
+                        <option value="1080">1080p FHD</option>
+                        <option value="2160">4K Ultra HD</option>
+                        <option value="4320">8K Ultra HD</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-filters" style="align-items: center;">
+                <div>
+                    <label class="cc-checkbox">
+                        <input type="checkbox" id="yt-embed-cc" checked> Embed CC Subtitles
+                    </label>
+                </div>
+                <div>
+                    <label>CC Language</label>
+                    <select id="yt-cc-lang">
+                        <option value="en" selected>English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="all">All Available</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div id="results" class="results-list"></div>
+    </div>
+
+    <!-- TAB 3: Music & Playlists -->
+    <div id="music-tab" class="tab-content hidden">
+        <div class="card">
+            <h2>Music & Playlist Workspace</h2>
+            <div style="margin-bottom: 1rem;">
+                <label>Spotify or YouTube Playlist URL</label>
+                <input type="text" id="music-url" placeholder="Paste Spotify or YouTube playlist/track link..." style="width: 100%;">
+            </div>
+            <div class="grid-filters">
+                <div>
+                    <label>Audio Format</label>
+                    <select id="music-format">
+                        <option value="mp3" selected>MP3</option>
+                        <option value="flac">FLAC (Lossless)</option>
+                        <option value="m4a">M4A (AAC)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Bitrate Quality</label>
+                    <select id="music-quality">
+                        <option value="320" selected>320 kbps</option>
+                        <option value="256">256 kbps</option>
+                    </select>
+                </div>
+            </div>
+            <button id="fetch-playlist-btn" onclick="fetchPlaylist()" style="width: 100%;">Extract Tracklist</button>
+        </div>
+
+        <!-- Tracklist Selection Container -->
+        <div id="tracklist-container" class="hidden card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="margin: 0; font-size: 0.95rem;">Select Tracks:</h3>
+                <div>
+                    <button onclick="toggleSelectAll(true)" style="padding: 4px 10px; font-size: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color);">Select All</button>
+                    <button onclick="toggleSelectAll(false)" style="padding: 4px 10px; font-size: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color);">Deselect All</button>
+                </div>
+            </div>
+            <div id="tracks-checklist" style="max-height: 280px; overflow-y: auto; padding-right: 4px; margin-bottom: 1rem;"></div>
+            <button id="download-selected-btn" onclick="downloadSelectedMusic()" style="width: 100%; background: var(--accent-success);">Download Selected Tracks</button>
+        </div>
+
+        <div id="downloaded-music-container" class="hidden card">
+            <h3 style="margin-top:0; font-size: 0.95rem;">Downloaded Output Files:</h3>
+            <div id="music-file-list"></div>
+        </div>
+    </div>
+
+    <p id="status"></p>
+</div>
+
+<script>
+    let fetchedTracks = [];
+
+    function switchTab(tabId, element) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.remove('hidden');
+        element.classList.add('active');
+    }
+
+    async function downloadUniversal() {
+        const url = document.getElementById('uni-url').value;
+        const media_type = document.getElementById('uni-mode').value;
+        const start_time = document.getElementById('uni-start').value;
+        const end_time = document.getElementById('uni-end').value;
+        const embed_cc = document.getElementById('uni-embed-cc').checked;
+        const cc_lang = document.getElementById('uni-cc-lang').value;
+        const status = document.getElementById('status');
+        const btn = document.getElementById('uni-btn');
+        const resultCard = document.getElementById('uni-result');
+
+        if (!url) return alert('Please enter a media URL.');
+
+        status.innerText = 'Processing extraction & embedding captions...';
+        btn.disabled = true;
+        resultCard.classList.add('hidden');
+
+        try {
+            const response = await fetch('/download-universal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, media_type, start_time, end_time, embed_cc, cc_lang })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+
+            status.innerText = 'Ready for download.';
+            document.getElementById('uni-title').innerText = data.title;
+            document.getElementById('uni-site').innerText = `Source: ${data.site}`;
+            document.getElementById('uni-link').href = `/files/universal/${encodeURIComponent(data.filename)}`;
+            resultCard.classList.remove('hidden');
+        } catch (err) {
+            status.innerText = 'Failed: ' + err.message;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function executeSearch() {
+        const query = document.getElementById('search-query').value;
+        const sort_by = document.getElementById('filter-sort').value;
+        const min_res = document.getElementById('filter-res').value;
+        const status = document.getElementById('status');
+        const resultsContainer = document.getElementById('results');
+
+        if (!query) return alert('Enter a search query.');
+
+        status.innerText = 'Searching workspace & analyzing streams...';
+        resultsContainer.innerHTML = '';
+
+        try {
+            const response = await fetch('/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query, sort_by, min_res, limit: 10 })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+
+            status.innerText = `Found ${data.results.length} result(s):`;
+
+            data.results.forEach(v => {
+                const item = document.createElement('div');
+                item.className = 'video-card';
+                item.innerHTML = `
+                    <img src="${v.thumbnail}" alt="thumb">
+                    <div class="video-card-body">
+                        <div>
+                            <span class="badge">${v.max_resolution}</span>
+                            <p style="font-weight:600; margin: 8px 0 4px 0; font-size: 0.85rem; color:#f8fafc;">${v.title}</p>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">${v.uploader} • ${v.duration || 'N/A'}</p>
+                        </div>
+                        <button onclick="downloadDirect('${v.url}', '${v.max_height}')" style="margin-top: 10px; width: 100%; font-size:0.8rem;">
+                            Download (${v.max_resolution})
+                        </button>
+                    </div>
+                `;
+                resultsContainer.appendChild(item);
+            });
+        } catch (err) {
+            status.innerText = 'Search failed: ' + err.message;
+        }
+    }
+
+    async function downloadDirect(url, maxRes) {
+        const status = document.getElementById('status');
+        const embed_cc = document.getElementById('yt-embed-cc').checked;
+        const cc_lang = document.getElementById('yt-cc-lang').value;
+
+        status.innerText = `Downloading ${maxRes}p video...`;
+
+        try {
+            const response = await fetch('/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, resolution: maxRes, embed_cc, cc_lang })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+            window.location.href = `/files/${encodeURIComponent(data.filename)}`;
+        } catch (err) {
+            status.innerText = 'Download failed: ' + err.message;
+        }
+    }
+
+    async function fetchPlaylist() {
+        const url = document.getElementById('music-url').value;
+        const status = document.getElementById('status');
+        const btn = document.getElementById('fetch-playlist-btn');
+        const tracklistContainer = document.getElementById('tracklist-container');
+        const checklist = document.getElementById('tracks-checklist');
+
+        if (!url) return alert('Please enter a music or playlist URL');
+
+        status.innerText = 'Extracting tracklist & album art...';
+        btn.disabled = true;
+        tracklistContainer.classList.add('hidden');
+        checklist.innerHTML = '';
+
+        try {
+            const response = await fetch('/fetch-playlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+
+            fetchedTracks = data.tracks;
+            status.innerText = `Loaded ${fetchedTracks.length} track(s).`;
+
+            fetchedTracks.forEach((track, index) => {
+                const row = document.createElement('div');
+                row.className = 'track-item';
+                const thumbUrl = track.thumbnail || 'https://via.placeholder.com/40?text=♪';
+                row.innerHTML = `
+                    <div class="track-info">
+                        <input type="checkbox" id="track-${index}" checked style="cursor: pointer;">
+                        <img src="${thumbUrl}" class="track-thumb" alt="cover">
+                        <span class="track-title" title="${track.title}">${track.title}</span>
+                    </div>
+                `;
+                checklist.appendChild(row);
+            });
+
+            tracklistContainer.classList.remove('hidden');
+        } catch (err) {
+            status.innerText = 'Failed to load tracklist: ' + err.message;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function toggleSelectAll(selectState) {
+        fetchedTracks.forEach((_, index) => {
+            const checkbox = document.getElementById(`track-${index}`);
+            if (checkbox) checkbox.checked = selectState;
+        });
+    }
+
+    async function downloadSelectedMusic() {
+        const format = document.getElementById('music-format').value;
+        const quality = document.getElementById('music-quality').value;
+        const status = document.getElementById('status');
+        const btn = document.getElementById('download-selected-btn');
+        const fileList = document.getElementById('music-file-list');
+
+        const selectedTracks = [];
+        fetchedTracks.forEach((track, index) => {
+            const checkbox = document.getElementById(`track-${index}`);
+            if (checkbox && checkbox.checked) {
+                selectedTracks.push(track);
+            }
+        });
+
+        if (selectedTracks.length === 0) return alert('Please select at least one track.');
+
+        status.innerText = `Downloading ${selectedTracks.length} track(s)...`;
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/download-music', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tracks: selectedTracks, format, quality })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+
+            status.innerText = data.message;
+            document.getElementById('downloaded-music-container').classList.remove('hidden');
+            fileList.innerHTML = '';
+            
+            data.files.forEach((filename, i) => {
+                const fileUrl = `/files/music/${encodeURIComponent(filename)}`;
+                fileList.innerHTML += `<p style="margin: 4px 0;"><a href="${fileUrl}" download style="color:#60a5fa; text-decoration: none; font-weight: 500;">${filename}</a></p>`;
+                
+                // Immediately trigger automated browser downloads with a staggered timeout
+                setTimeout(() => {
+                    const a = document.createElement('a');
+                    a.href = fileUrl;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }, i * 350);
+            });
+        } catch (err) {
+            status.innerText = 'Download failed: ' + err.message;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>

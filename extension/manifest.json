@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Universal Media Downloader Hub",
+  "version": "1.0",
+  "description": "Download 8K videos, music playlists, and universal links using your local Flask server.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:5000/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": ["content.js"]
+    }
+  ]
+}

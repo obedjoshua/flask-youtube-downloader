@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            width: 320px; padding: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0f172a; color: #f8fafc; margin: 0;
+        }
+        h3 { margin-top: 0; font-size: 1rem; text-align: center; }
+        label { font-size: 0.8rem; color: #94a3b8; display: block; margin-top: 8px; }
+        input, select, button {
+            width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px;
+            border: 1px solid #334155; background: #1e293b; color: #fff;
+            box-sizing: border-box; font-size: 0.85rem;
+        }
+        button { background: #2563eb; font-weight: bold; cursor: pointer; margin-top: 12px; border: none; }
+        button:hover { background: #1d4ed8; }
+        button:disabled { background: #475569; }
+        .checkbox-container { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 0.8rem; color: #f8fafc; }
+        .checkbox-container input { width: auto; margin: 0; }
+        #status { font-size: 0.8rem; margin-top: 10px; text-align: center; color: #38bdf8; word-break: break-all; }
+    </style>
+</head>
+<body>
+
+<h3>Media Downloader Hub</h3>
+
+<label for="page-url">Current Page URL:</label>
+<input type="text" id="page-url" readonly>
+
+<label for="mode">Download Type:</label>
+<select id="mode">
+    <option value="universal_video">Universal Video (MP4)</option>
+    <option value="universal_audio">Universal Audio (MP3)</option>
+    <option value="music">Music / Playlist</option>
+</select>
+
+<div class="checkbox-container">
+    <input type="checkbox" id="embed-cc" checked>
+    <label for="embed-cc" style="margin:0;">Embed Subtitles / CC</label>
+</div>
+
+<label for="cc-lang">Subtitle Language:</label>
+<select id="cc-lang">
+    <option value="en" selected>English (en)</option>
+    <option value="es">Spanish (es)</option>
+    <option value="fr">French (fr)</option>
+    <option value="ja">Japanese (ja)</option>
+    <option value="all">All Languages</option>
+</select>
+
+<button id="dl-btn">Download via Server</button>
+
+<div id="status"></div>
+
+<script src="popup.js"></script>
+</body>
+</html>
