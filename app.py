@@ -4,10 +4,14 @@ from typing import Any, cast
 
 import spotipy
 import yt_dlp
+from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request, send_file
 from flask_cors import CORS
 from spotipy.oauth2 import SpotifyClientCredentials
 from yt_dlp.utils import DownloadError, download_range_func
+
+# Load environment variables from .env file securely
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)  # Enables Cross-Origin Requests for the browser extension
@@ -60,47 +64,6 @@ else:
       "[WARNING] FFmpeg could not be automatically located. Ensure it is"
       " installed."
   )
-
-
-def parse_spotify_playlist(url: str) -> list[str]:
-  tracks: list[str] = []
-  if SPOTIPY_CLIENT_ID and SPOTIPY_CLIENT_SECRET:
-    sp = spotipy.Spotify(
-        auth_manager=SpotifyClientCredentials(
-            client_id=SPOTIPY_CLIENT_ID, client_secret=SPOTIPY_CLIENT_SECRET
-        )
-    )
-    if "track" in url:
-      track_id = url.split("track/")[1].split("?")[0]
-      item = sp.track(track_id)
-      if item:
-        artists = item.get("artists", [{}])
-        artist_name = (
-            artists[0].get("name", "Unknown Artist")
-            if artists
-            else "Unknown Artist"
-        )
-        track_name = item.get("name", "Unknown Track")
-        tracks.append(f"{artist_name} - {track_name}")
-    elif "playlist" in url:
-      playlist_id = url.split("playlist/")[1].split("?")[0]
-      results = sp.playlist_items(playlist_id)
-      if results:
-        for playlist_item in results.get("items", []):
-          if playlist_item:
-            track = playlist_item.get("track")
-            if track:
-              artists = track.get("artists", [{}])
-              artist_name = (
-                  artists[0].get("name", "Unknown Artist")
-                  if artists
-                  else "Unknown Artist"
-              )
-              track_name = track.get("name", "Unknown Track")
-              tracks.append(f"{artist_name} - {track_name}")
-  else:
-    tracks.append(url)
-  return tracks
 
 
 @app.route("/")
@@ -265,7 +228,7 @@ def search_videos():
 
   ydl_opts: dict[str, Any] = {
       "quiet": True,
-      "extract_flat": "in_playlist",
+      "extract_flat": True,
       "skip_download": True,
   }
 
@@ -285,37 +248,47 @@ def search_videos():
     for entry in entries:
       if not entry:
         continue
-      v_url = entry.get("url") or f"https://www.youtube.com/watch?v={entry.get('id')}"
+      vid_id = entry.get("id")
+      v_url = entry.get("url") or f"https://www.youtube.com/watch?v={vid_id}"
+
       try:
-        detail_opts: dict[str, Any] = {"quiet": True, "no_warnings": True}
+        detail_opts: dict[str, Any] = {
+            "quiet": True,
+            "no_warnings": True,
+            "skip_download": True,
+        }
         if FFMPEG_DIR and os.path.exists(FFMPEG_DIR):
           detail_opts["ffmpeg_location"] = FFMPEG_DIR
 
         with yt_dlp.YoutubeDL(cast(Any, detail_opts)) as ydl_detail:
           info = ydl_detail.extract_info(v_url, download=False)
-          if not info:
-
-            continue
-          formats = info.get("formats", []) or []
+          formats = (info.get("formats") or []) if info else []
           max_height = max(
-              [f.get("height") or 0 for f in formats if f], default=0
+              [f.get("height") or 0 for f in formats if f.get("height")],
+              default=1080,
           )
+      except (DownloadError, ValueError, TypeError, OSError):
+        max_height = 1080
 
-          if max_height >= min_res_int:
-            detailed_results.append({
-                "id": info.get("id"),
-                "url": info.get("webpage_url", v_url),
-                "title": info.get("title"),
-                "uploader": info.get("uploader"),
-                "duration": info.get("duration_string"),
-                "views": info.get("view_count"),
-                "max_resolution": f"{max_height}p",
-                "max_height": max_height,
-                "thumbnail": info.get("thumbnail"),
-            })
-      except (DownloadError, ValueError, TypeError) as inner_e:
-        app.logger.warning("Skipping video due to error: %s", inner_e)
-        continue
+      if max_height >= min_res_int:
+        thumb = entry.get("thumbnail") or f"https://i.ytimg.com/vi/{vid_id}/hqdefault.jpg"
+        res_label = f"{max_height}p"
+        if max_height >= 2160:
+          res_label = "4K UHD"
+        elif max_height >= 4320:
+          res_label = "8K UHD"
+
+        detailed_results.append({
+            "id": vid_id,
+            "url": v_url,
+            "title": entry.get("title", "Unknown Title"),
+            "uploader": entry.get("uploader", "Unknown Uploader"),
+            "duration": entry.get("duration_string", "N/A"),
+            "views": entry.get("view_count", 0),
+            "max_resolution": res_label,
+            "max_height": max_height,
+            "thumbnail": thumb,
+        })
 
     if sort_by == "views":
       detailed_results.sort(key=lambda x: x.get("views") or 0, reverse=True)
